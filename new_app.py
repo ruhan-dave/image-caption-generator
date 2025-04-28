@@ -8,12 +8,18 @@ import cohere
 import re
 from joblib import load
 from sentence_transformers import SentenceTransformer
+import boto3
 
 # Load environment variables
 load_dotenv()
 
+# S3 setup
+cohere_api = st.secrets["COHERE_API_KEY"]
+aws_id = st.secrets["AWS_ACCESS_KEY"]
+aws_secret = st.secrets["AWS_SECRET"]
+bucket_name = "daves-caption"
+
 # Initialize Cohere client
-cohere_api = os.getenv("COHERE_API_KEY")
 ch = cohere.Client(api_key=cohere_api)
 
 # Instagram caption template
@@ -29,12 +35,31 @@ EMOTION_COLUMNS = ['is_anger', 'is_disgust', 'is_fear',
                   'is_joy', 'is_sadness', 'is_surprise']
 THRESHOLD = 0.5
 
-# Load models
+# download s3 files
 @st.cache_resource
 def load_models():
     try:
-        pca_loaded = load('/Users/ruhwang/Desktop/AI/spring2025_courses/aipi540-dl/ig_post_generator/models/pca_model.joblib')
-        lgbm_model = load('/Users/ruhwang/Desktop/AI/spring2025_courses/aipi540-dl/ig_post_generator/models/lgbm.joblib')
+        # S3 keys (no folder)
+        pca_key = "pca_model.joblib"
+        lgbm_key = "lgbm.joblib"
+
+        # Local paths
+        pca_local = "pca_model.joblib"
+        lgbm_local = "lgbm.joblib"
+
+        # Download from S3 if not present locally
+        s3 = boto3.client('s3',
+                          aws_access_key_id=aws_id,
+                          aws_secret_access_key=aws_secret)
+
+        if not os.path.exists(pca_local):
+            s3.download_file(bucket_name, pca_key, pca_local)
+        if not os.path.exists(lgbm_local):
+            s3.download_file(bucket_name, lgbm_key, lgbm_local)
+
+        # Load models
+        pca_loaded = load(pca_local)
+        lgbm_model = load(lgbm_local)
         embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
         return pca_loaded, lgbm_model, embedding_model
     except Exception as e:
