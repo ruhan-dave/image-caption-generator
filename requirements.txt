@@ -7,3 +7,4 @@ cohere
 joblib
 sentence-transformers
 boto3
+lightgbm
