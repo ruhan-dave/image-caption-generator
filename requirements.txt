@@ -6,3 +6,4 @@ dotenv
 cohere
 joblib
 sentence-transformers
+boto3
