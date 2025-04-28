@@ -1,0 +1,10 @@
+{
+  "num_images": 809,
+  "avg_scores": {
+    "avg_bleu1": 0.0,
+    "avg_bleu2": 0.0,
+    "avg_bleu3": 0.0,
+    "avg_bleu4": 0.0
+  },
+  "timestamp": "2025-04-27 17:26:15"
+}
